@@ -14,28 +14,56 @@ import {
     Dimensions
 } from 'react-native';
 
-var Icon = require('react-native-vector-icons/Ionicons');
+import Icon from 'react-native-vector-icons/Ionicons';
+var request = require('../Common/request')
+var config = require('../Common/config')
 var {width, height} = Dimensions.get('window');
 
 var Video = React.createClass({
 
-    getInitialState(){
-        // 初始化数据源
-        var ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
-        return{
-            dataSource: ds.cloneWithRows([
-                {
-                "_id": "330000200204053239",
-                "thumb": "http://dummyimage.com/1200x600/79f2a6)",
-                "video": "https://vd3.bdstatic.com//mda-hmjcb522vhq06stn//sc//mda-hmjcb522vhq06stn.mp4?auth_key=1513763151-0-0-e99275a926646031fdbbee30ec210895&bcevod_channel=searchbox_feed&pd=bjh&abtest=all' type='video/mp4"
-                },
-                {
-                    "_id": "820000198005152943",
-                    "thumb": "http://dummyimage.com/1200x600/f28379)",
-                    "video": "https://vd3.bdstatic.com//mda-hmjcb522vhq06stn//sc//mda-hmjcb522vhq06stn.mp4?auth_key=1513763151-0-0-e99275a926646031fdbbee30ec210895&bcevod_channel=searchbox_feed&pd=bjh&abtest=all' type='video/mp4"
-                }]),
+    getDefaultProps(){
+        return {
+            api_url:'http://rap2api.taobao.org/app/mock/data/8425'
+        }
+    },
 
-            // dataSource: new ListView.DataSource({rowHasChanged: (row1, row2) => row1 !== row2})
+    getInitialState(){
+
+        // 初始化数据源
+        return {
+            dataSource: new ListView.DataSource({rowHasChanged: (row1, row2) => row1 !== row2})
+
+
+            // var ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
+        // return{
+            // dataSource: ds.cloneWithRows([
+                //构造测试数据
+                // {
+                //     "_id": "130000201605234716",
+                //     "thumb": "http://dummyimage.com/1280x720/797ff2)",
+                //     "video": "https://vd3.bdstatic.com//mda-hmjcb522vhq06stn//sc//mda-hmjcb522vhq06stn.mp4?auth_key=1513763151-0-0-e99275a926646031fdbbee30ec210895&bcevod_channel=searchbox_feed&pd=bjh&abtest=all' type='video/mp4",
+                //     "title": "Rcjzvl"
+                // },
+                // {
+                //     "_id": "460000198612147428",
+                //     "thumb": "http://dummyimage.com/1280x720/a2f279)",
+                //     "video": "https://vd3.bdstatic.com//mda-hmjcb522vhq06stn//sc//mda-hmjcb522vhq06stn.mp4?auth_key=1513763151-0-0-e99275a926646031fdbbee30ec210895&bcevod_channel=searchbox_feed&pd=bjh&abtest=all' type='video/mp4",
+                //     "title": "Rdhqe"
+                // },
+                // {
+                //     "_id": "460000198612147428",
+                //     "thumb": "http://dummyimage.com/1280x720/a2f279)",
+                //     "video": "https://vd3.bdstatic.com//mda-hmjcb522vhq06stn//sc//mda-hmjcb522vhq06stn.mp4?auth_key=1513763151-0-0-e99275a926646031fdbbee30ec210895&bcevod_channel=searchbox_feed&pd=bjh&abtest=all' type='video/mp4",
+                //     "title": "Rdhqe"
+                // },
+                // {
+                //     "_id": "150000199811078455",
+                //     "thumb": "http://dummyimage.com/1280x720/f279c6)",
+                //     "video": "https://vd3.bdstatic.com//mda-hmjcb522vhq06stn//sc//mda-hmjcb522vhq06stn.mp4?auth_key=1513763151-0-0-e99275a926646031fdbbee30ec210895&bcevod_channel=searchbox_feed&pd=bjh&abtest=all' type='video/mp4",
+                //     "title": "Trq"
+                // }
+                // ]),
+
         }
     },
 
@@ -50,6 +78,7 @@ var Video = React.createClass({
                 <ListView
                     dataSource={this.state.dataSource}
                     renderRow={this.renderRow}
+                    automaticallyAdjustContentInsets={false}
                 />
 
 
@@ -57,12 +86,36 @@ var Video = React.createClass({
         );
     },
 
+    componentDidMount(){
+        this.fetchData()
+    },
+
+    fetchData() {
+        request.get(config.api.base + config.api.videolist, {
+            accessToken:'ww'
+        })
+            .then((responseData)=>{
+                console.log(responseData)
+                //更新数据源
+                this.setState({
+                    dataSource:this.state.dataSource.cloneWithRows(responseData.data)
+                })
+            })
+            .catch((error)=>{
+                //更新数据源(可以是之前的缓存数据)
+                this.setState({
+
+                })
+            })
+
+    },
+
 
     renderRow(rowData) {
         return(
             <TouchableHighlight onPress={this.onPressCell}>
                 <View style={styles.item}>
-                    <Text style={styles.title}>{rowData._id}</Text>
+                    <Text style={styles.title}>{rowData.title}</Text>
                     <Image
                         source={{uri:rowData.thumb}}
                         style={styles.thumb}
@@ -139,7 +192,7 @@ const styles = StyleSheet.create({
     },
     thumb:{
         width:width,
-        height:width * 0.5,
+        height:width * 0.56,
         resizeMode:'cover'
     },
     play:{
