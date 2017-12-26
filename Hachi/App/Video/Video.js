@@ -27,6 +27,65 @@ var cachedResults = {
     total:0
 }
 
+var Item = React.createClass({
+
+    getInitialState(){
+        var rowData = this.props.rowData
+        return{
+            rowData : rowData
+        }
+    },
+
+    render(){
+
+        var rowData = this.state.rowData
+        return (
+            <TouchableHighlight onPress={this.onPressCell}>
+                <View style={styles.item}>
+                    <Text style={styles.title}>{rowData.title}</Text>
+                    <Image
+                        source={{uri:rowData.thumb}}
+                        style={styles.thumb}
+                    >
+                        {/*<Icon*/}
+                        {/*name:'ios-play'*/}
+                        {/*size={28}*/}
+                        {/*style={styles.play}*/}
+                        {/*/>*/}
+
+                    </Image>
+
+                    <View style={styles.itemFooter}>
+                        <View style={styles.handleBox}>
+                            {/*<Icon*/}
+                            {/*name='ios-heart-outline'*/}
+                            {/*size={28}*/}
+                            {/*style={styles.up}*/}
+                            {/*/>*/}
+                            <Text style={styles.handleText}>喜欢</Text>
+                        </View>
+
+                        <View style={styles.handleBox}>
+                            {/*<Icon*/}
+                            {/*name='ios-chatbubble-outline'*/}
+                            {/*size={28}*/}
+                            {/*style={styles.commentIcon}*/}
+                            {/*/>*/}
+                            <Text style={styles.handleText}>评论</Text>
+                        </View>
+
+                    </View>
+                </View>
+            </TouchableHighlight>
+        )
+    },
+
+    //点击视频列表
+    onPressCell(){
+
+    }
+})
+
 var Video = React.createClass({
 
     getDefaultProps(){
@@ -206,43 +265,7 @@ var Video = React.createClass({
 
     renderRow(rowData) {
         return(
-            <TouchableHighlight onPress={this.onPressCell}>
-                <View style={styles.item}>
-                    <Text style={styles.title}>{rowData.title}</Text>
-                    <Image
-                        source={{uri:rowData.thumb}}
-                        style={styles.thumb}
-                    >
-                        {/*<Icon*/}
-                            {/*name:'ios-play'*/}
-                            {/*size={28}*/}
-                            {/*style={styles.play}*/}
-                        {/*/>*/}
-
-                    </Image>
-
-                    <View style={styles.itemFooter}>
-                        <View style={styles.handleBox}>
-                            {/*<Icon*/}
-                                {/*name='ios-heart-outline'*/}
-                                {/*size={28}*/}
-                                {/*style={styles.up}*/}
-                            {/*/>*/}
-                            <Text style={styles.handleText}>喜欢</Text>
-                        </View>
-
-                        <View style={styles.handleBox}>
-                            {/*<Icon*/}
-                                {/*name='ios-chatbubble-outline'*/}
-                                {/*size={28}*/}
-                                {/*style={styles.commentIcon}*/}
-                            {/*/>*/}
-                            <Text style={styles.handleText}>评论</Text>
-                        </View>
-
-                    </View>
-                </View>
-            </TouchableHighlight>
+            <Item rowData={rowData} />
         )
     },
 
@@ -263,10 +286,6 @@ var Video = React.createClass({
         return <ActivityIndicator style={styles.loadingMore}/>
     },
 
-    //点击视频列表
-    onPressCell(){
-
-    }
 });
 
 const styles = StyleSheet.create({
