@@ -11,13 +11,21 @@ import {
     Platform,
     ListView,
     TouchableHighlight,
-    Dimensions
+    Dimensions,
+    ActivityIndicator,
+    RefreshControl
 } from 'react-native';
 
 import Icon from 'react-native-vector-icons/Ionicons';
 var request = require('../Common/request')
 var config = require('../Common/config')
 var {width, height} = Dimensions.get('window');
+
+var cachedResults = {
+    nextPage:1,
+    items:[],
+    total:0
+}
 
 var Video = React.createClass({
 
@@ -31,8 +39,12 @@ var Video = React.createClass({
 
         // 初始化数据源
         return {
-            dataSource: new ListView.DataSource({rowHasChanged: (row1, row2) => row1 !== row2})
+            dataSource: new ListView.DataSource({rowHasChanged: (row1, row2) => row1 !== row2}),
 
+            //是否正在加载
+            isLoadingTail:false,
+            //头部刷新状态
+            isRefreshing:false
 
             // var ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
         // return{
@@ -79,35 +91,116 @@ var Video = React.createClass({
                     dataSource={this.state.dataSource}
                     renderRow={this.renderRow}
                     automaticallyAdjustContentInsets={false}
+                    onEndReached={this._fetchMoreData}
+                    onEndReachedThreshold={20}
+                    //底部加载
+                    renderFooter = {this._renderFooter}
+                    //顶部加载
+                    refreshControl={
+                        <RefreshControl
+                            refreshing={this.state.isRefreshing}
+                            onRefresh={this._onRefresh}
+                            tintColor='#ff6600'
+                            title="拼命加载中..."
+                            // titleColor='#ff6600'
+                            //下面两个是安卓配置属性
+                            // colors={['#ff0000', '#00ff00', '#0000ff']}
+                            // progressBackgroundColor="#ffff00"
+                        />
+                    }
                 />
-
 
             </View>
         );
     },
 
     componentDidMount(){
-        this.fetchData()
+        this._fetchData(1)
     },
 
-    fetchData() {
+    _fetchData(page) {
+
+        if (page !== 0){
+            this.setState({
+                isLoadingTail:true
+            })
+        }else {
+            this.setState({
+                isRefreshing:true
+            })
+        }
+
         request.get(config.api.base + config.api.videolist, {
-            accessToken:'ww'
+            accessToken:'ww',
+            page:page
         })
             .then((responseData)=>{
                 console.log(responseData)
+
+                var items = cachedResults.items.slice()
+                if (page !== 0){
+                    items = items.concat(responseData.data)
+                    cachedResults.nextPage += 1
+
+                }else {
+                    items = responseData.data.concat(items)
+                }
+                cachedResults.items = items
+                cachedResults.total = responseData.total
+
                 //更新数据源
-                this.setState({
-                    dataSource:this.state.dataSource.cloneWithRows(responseData.data)
-                })
+                if (page !== 0){
+                    this.setState({
+                        isLoadingTail:false,
+                        dataSource:this.state.dataSource.cloneWithRows(cachedResults.items),
+                    })
+                }else {
+                    this.setState({
+                        isRefreshing:false,
+                        dataSource:this.state.dataSource.cloneWithRows(cachedResults.items),
+                    })
+                }
+
             })
             .catch((error)=>{
                 //更新数据源(可以是之前的缓存数据)
-                this.setState({
+                if (page !== 0){
+                    this.setState({
+                        isLoadingTail:false
+                    })
+                }else {
+                    this.setState({
+                        isRefreshing:false
+                    })
+                }
 
-                })
             })
 
+    },
+
+    //刷新
+    _onRefresh(){
+        if (!this._hasMoreData() || this.state.isRefreshing){
+            return
+        }
+
+        this._fetchData(0)
+    },
+
+    //加载更多数据
+    _fetchMoreData(){
+
+        if (!this._hasMoreData() || this.state.isLoadingTail){
+            return
+        }
+
+        //加载下一页数据
+        var page = cachedResults.nextPage
+        this._fetchData(page)
+    },
+
+    _hasMoreData(){
+        return cachedResults.items.length !== cachedResults.total
     },
 
 
@@ -153,6 +246,22 @@ var Video = React.createClass({
         )
     },
 
+    //自定义加载
+    _renderFooter(){
+        if(!this._hasMoreData() && cachedResults.total !== 0){
+            return(
+                <View style={styles.loadingMore}>
+                    <Text style={styles.loadingText}>--我们是有底线的--</Text>
+                </View>
+            )
+        }
+
+        if(!this.state.isLoadingTail){
+            return <View style={styles.loadingMore}/>
+        }
+
+        return <ActivityIndicator style={styles.loadingMore}/>
+    },
 
     //点击视频列表
     onPressCell(){
@@ -233,8 +342,16 @@ const styles = StyleSheet.create({
     commentIcon:{
         color:'#333',
         fontSize:22,
-    }
+    },
 
+    loadingMore:{
+        marginVertical:20
+    },
+
+    loadingText:{
+        color:'#777',
+        textAlign:'center'
+    }
 });
 
 module.exports = Video;
