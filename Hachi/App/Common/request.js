@@ -18,7 +18,7 @@ request.post = function (url, body) {
     var options = _.extend(config.header, {
         body:JSON.stringify(body)
     })
-    return fetch(url + 'POST', options)
+    return fetch(url , options)
         .then((response) => response.json())
 }
 

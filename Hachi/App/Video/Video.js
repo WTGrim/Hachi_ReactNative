@@ -13,12 +13,14 @@ import {
     TouchableHighlight,
     Dimensions,
     ActivityIndicator,
-    RefreshControl
+    RefreshControl,
+    AlertIOS
 } from 'react-native';
 
 import Icon from 'react-native-vector-icons/Ionicons';
 var request = require('../Common/request')
 var config = require('../Common/config')
+var VideoDetail = require('./VideoDetail')
 var {width, height} = Dimensions.get('window');
 
 var cachedResults = {
@@ -32,15 +34,15 @@ var Item = React.createClass({
     getInitialState(){
         var rowData = this.props.rowData
         return{
-            rowData : rowData
+            rowData : rowData,
+            voted:rowData.voted,
         }
     },
 
     render(){
-
         var rowData = this.state.rowData
         return (
-            <TouchableHighlight onPress={this.onPressCell}>
+            <TouchableHighlight onPress={this.props.onSelect}>
                 <View style={styles.item}>
                     <Text style={styles.title}>{rowData.title}</Text>
                     <Image
@@ -60,9 +62,9 @@ var Item = React.createClass({
                             {/*<Icon*/}
                             {/*name='ios-heart-outline'*/}
                             {/*size={28}*/}
-                            {/*style={styles.up}*/}
+                            {/*style={[styles.up, this.state.voted ? null:styles.down]}*/}
                             {/*/>*/}
-                            <Text style={styles.handleText}>喜欢</Text>
+                            <Text style={[styles.handleText, this.state.voted ? styles.handleTextUp : null]}  onPress={this._up}>喜欢</Text>
                         </View>
 
                         <View style={styles.handleBox}>
@@ -80,10 +82,35 @@ var Item = React.createClass({
         )
     },
 
-    //点击视频列表
-    onPressCell(){
+    //点击喜欢
+    _up() {
+        var up = !this.state.voted
+        var rowData = this.state.rowData
+        var url = config.api.base + config.api.up
 
-    }
+        var body = {
+            id: rowData._id,
+            up: up ? 'yes' : 'no',
+            accessToken: 'abc'
+        }
+
+        var that = this
+        request.post(url, body)
+            .then((data)=>{
+                console.log(data)
+                if (data && data.success){
+                    that.setState({
+                        up: up
+                    })
+                }else {
+                    AlertIOS.alert('点赞失败，稍后重试')
+                }
+        })
+            .catch((error)=>{
+                AlertIOS.alert('点赞失败，稍后重试')
+        })
+    },
+
 })
 
 var Video = React.createClass({
@@ -265,7 +292,11 @@ var Video = React.createClass({
 
     renderRow(rowData) {
         return(
-            <Item rowData={rowData} />
+            <Item
+                key={rowData._id}
+                onSelect={() => this._goToDetail(rowData)}
+                rowData={rowData}
+            />
         )
     },
 
@@ -285,6 +316,19 @@ var Video = React.createClass({
 
         return <ActivityIndicator style={styles.loadingMore}/>
     },
+
+
+    //进入详情页
+    _goToDetail(rowData){
+        this.props.navigator.push({
+            name: 'detail',
+            component: VideoDetail,
+            //要传递的参数
+            params:{
+                rowData: rowData
+            }
+        })
+    }
 
 });
 
@@ -349,14 +393,25 @@ const styles = StyleSheet.create({
         backgroundColor:'white',
         justifyContent:'center'
     },
-    up:{
+    down:{
         fontSize:22,
         color:'#333'
+    },
+
+    up:{
+        fontSize:22,
+        color:'#ed7b66'
     },
     handleText:{
         left:12,
         fontSize:15,
         color:'#333'
+    },
+
+    handleTextUp:{
+        left:12,
+        fontSize:15,
+        color:'#ed7b66'
     },
     commentIcon:{
         color:'#333',
