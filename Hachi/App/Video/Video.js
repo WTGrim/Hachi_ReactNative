@@ -49,30 +49,30 @@ var Item = React.createClass({
                         source={{uri:rowData.thumb}}
                         style={styles.thumb}
                     >
-                        {/*<Icon*/}
-                        {/*name:'ios-play'*/}
-                        {/*size={28}*/}
-                        {/*style={styles.play}*/}
-                        {/*/>*/}
+                        <Icon
+                        name='ios-play'
+                        size={28}
+                        style={styles.play}
+                        />
 
                     </Image>
 
                     <View style={styles.itemFooter}>
                         <View style={styles.handleBox}>
-                            {/*<Icon*/}
-                            {/*name='ios-heart-outline'*/}
-                            {/*size={28}*/}
-                            {/*style={[styles.up, this.state.voted ? null:styles.down]}*/}
-                            {/*/>*/}
+                            <Icon
+                            name='ios-heart-outline'
+                            size={28}
+                            style={[styles.up, this.state.voted ? null:styles.down]}
+                            />
                             <Text style={[styles.handleText, this.state.voted ? styles.handleTextUp : null]}  onPress={this._up}>喜欢</Text>
                         </View>
 
                         <View style={styles.handleBox}>
-                            {/*<Icon*/}
-                            {/*name='ios-chatbubble-outline'*/}
-                            {/*size={28}*/}
-                            {/*style={styles.commentIcon}*/}
-                            {/*/>*/}
+                            <Icon
+                            name='ios-chatboxes-outline'
+                            size={28}
+                            style={styles.commentIcon}
+                            />
                             <Text style={styles.handleText}>评论</Text>
                         </View>
 
@@ -371,7 +371,7 @@ const styles = StyleSheet.create({
         position:'absolute',
         bottom:14,
         right:14,
-        width:16,
+        width:46,
         height:46,
         paddingTop:9,
         paddingLeft:18,
