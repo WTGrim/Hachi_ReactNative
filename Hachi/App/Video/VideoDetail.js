@@ -33,6 +33,8 @@ var VideoDetail = React.createClass({
             videoProgress: 0.01,
             videoTotal:0,
             currentTime: 0,
+
+            playing:false,
         }
     },
 
@@ -66,6 +68,15 @@ var VideoDetail = React.createClass({
                         !this.state.videoReady && <ActivityIndicator color='#fff' style={styles.loading}/>
                     }
 
+                    {
+                        !this.state.videoReady && this.state.playing
+                            ? <Icon name= 'ios-play'
+                                    size={28}
+                                    style={styles.playIcon}
+                                    onPress={this._replay}/>
+                            :null
+                    }
+
                     <View style={styles.progressBox}>
                         <View style={[styles.progressBar, {width:width * this.state.videoProgress}]}></View>
                     </View>
@@ -96,11 +107,21 @@ var VideoDetail = React.createClass({
         var duration = videoData.playableDuration
         var currentTime = videoData.currentTime
         var percent = Number(currentTime / duration).toFixed(2)
-        this.setState({
+
+        var newState = {
             videoTotal:duration,
             currentTime:Number(videoData.currentTime.toFixed(2)),
             videoProgress:percent
-        })
+        }
+
+        if(!this.state.videoReady){
+            newState.videoReady = true
+        }
+
+        if (!this.state.playing){
+            newState.playing = true
+        }
+        this.setState(newState)
     },
     //视频播放结束
     _onEnd(){
@@ -108,14 +129,21 @@ var VideoDetail = React.createClass({
 
         //播放结束，进度条占满
         this.setState({
-            videoProgress:1
+            videoProgress:1,
+            playing:false
         })
     },
     //播放错误
     _onError(e){
         console.log('error')
         console.log(e)
-    }
+    },
+
+    //重新播放
+    _replay(){
+        this.refs.videoPlayer.seek(0)
+    },
+
 });
 
 const styles = StyleSheet.create({
@@ -156,6 +184,21 @@ const styles = StyleSheet.create({
         height:2,
         backgroundColor:'#ff6600',
 
+    },
+
+    playIcon:{
+        position:'absolute',
+        top:140,
+        left:width/2.0 - 30,
+        width:60,
+        height:60,
+        paddingTop:9,
+        paddingLeft:18,
+        backgroundColor:'transparent',
+        borderColor:'white',
+        borderWidth:1,
+        borderRadius:23,
+        color:'white'
     }
 });
 
