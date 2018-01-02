@@ -14,5 +14,7 @@ module.exports = {
         base:'http://rap2api.taobao.org/app/mock/2210/',
         videolist:'GET//api/videolist',
         up: 'POST/api/up',
+        comment:'GET/api/comments',
+
     }
 }

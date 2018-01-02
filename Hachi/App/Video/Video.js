@@ -42,7 +42,7 @@ var Item = React.createClass({
     render(){
         var rowData = this.state.rowData
         return (
-            <TouchableHighlight onPress={this.props.onSelect}>
+            <TouchableHighlight onPress={this.props.onSelect} underlayColor='white'>
                 <View style={styles.item}>
                     <Text style={styles.title}>{rowData.title}</Text>
                     <Image
@@ -60,9 +60,10 @@ var Item = React.createClass({
                     <View style={styles.itemFooter}>
                         <View style={styles.handleBox}>
                             <Icon
-                            name='ios-heart-outline'
+                            name={this.state.voted ? 'ios-heart' : 'ios-heart-outline'}
                             size={28}
                             style={[styles.up, this.state.voted ? null:styles.down]}
+                            onPress={this._up}
                             />
                             <Text style={[styles.handleText, this.state.voted ? styles.handleTextUp : null]}  onPress={this._up}>喜欢</Text>
                         </View>
@@ -100,7 +101,7 @@ var Item = React.createClass({
                 console.log(data)
                 if (data && data.success){
                     that.setState({
-                        up: up
+                        voted: up
                     })
                 }else {
                     AlertIOS.alert('点赞失败，稍后重试')
