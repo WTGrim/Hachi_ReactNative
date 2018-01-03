@@ -306,7 +306,7 @@ var Video = React.createClass({
         if(!this._hasMoreData() && cachedResults.total !== 0){
             return(
                 <View style={styles.loadingMore}>
-                    <Text style={styles.loadingText}>--我们是有底线的--</Text>
+                    <Text style={styles.loadingText}>--我是有底线的--</Text>
                 </View>
             )
         }

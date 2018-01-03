@@ -21,6 +21,13 @@ var Video = require('react-native-video').default
 var {width, height} = Dimensions.get('window');
 var request = require('../Common/request')
 var config = require('../Common/config')
+var cachedResults = {
+    nextPage:1,
+    items:[],
+    total:0
+}
+
+
 var VideoDetail = React.createClass({
 
     getInitialState(){
@@ -115,28 +122,22 @@ var VideoDetail = React.createClass({
                     </View>
                 </View>
 
-                <ScrollView
+
+
+
+                <ListView
+                    dataSource={this.state.dataSource}
+                    renderRow={this._renderRow}
                     automaticallyAdjustContentInsets={false}
                     onEndReached={this._fetchMoreData}
-                    enableEmptySections={true}
-                    showsVerticalScrollIndicator={false}
-                    style={styles.scrollView}
-                >
-                    <View style={styles.infoBox}>
-                        <Image style={styles.avatar} source={{uri:data.author.avatar}}/>
-                        <View style={styles.descBox}>
-                            <Text style={styles.nickname}>{data.author.nickname}</Text>
-                            <Text style={styles.title}>{data.title}</Text>
-                        </View>
-                    </View>
+                    onEndReachedThreshold={80}
+                    showsVerticalScrollIndicator={true}
+                    //底部加载
+                    renderFooter = {this._renderFooter}
 
-                    <ListView
-                        dataSource={this.state.dataSource}
-                        renderRow={this._renderRow}
-                        automaticallyAdjustContentInsets={false}
-
-                    />
-                </ScrollView>
+                    //头部视图
+                    renderHeader = {this._renderHeader}
+                />
 
             </View>
         );
@@ -170,6 +171,97 @@ var VideoDetail = React.createClass({
             .catch((error)=>{
                 console.log(error)
             })
+    },
+
+
+    _fetchData(page) {
+
+        var that = this
+        var url = config.api.base + config.api.comment
+
+        this.setState({
+            isLoadingTail:true
+        })
+
+
+        request.get(url, {
+            id:124,
+            accessToken:'123',
+            page:page
+        })
+            .then((responseData)=>{
+                console.log(responseData)
+
+                var items = cachedResults.items.slice()
+
+                items = items.concat(responseData.data)
+                cachedResults.nextPage += 1
+                cachedResults.items = items
+                cachedResults.total = responseData.total
+
+                //更新数据源
+
+                this.setState({
+                    isLoadingTail:false,
+                    dataSource:this.state.dataSource.cloneWithRows(cachedResults.items),
+                })
+
+            })
+            .catch((error)=>{
+                //更新数据源(可以是之前的缓存数据)
+                this.setState({
+                    isLoadingTail:false
+                })
+
+            })
+
+    },
+
+
+    //加载更多数据
+    _fetchMoreData(){
+
+        if (!this._hasMoreData() || this.state.isLoadingTail){
+            return
+        }
+
+        //加载下一页数据
+        var page = cachedResults.nextPage
+        this._fetchData(page)
+    },
+
+    _hasMoreData(){
+        return cachedResults.items.length !== cachedResults.total
+    },
+
+    //自定义加载
+    _renderFooter(){
+        if(!this._hasMoreData() && cachedResults.total !== 0){
+            return(
+                <View style={styles.loadingMore}>
+                    <Text style={styles.loadingText}>--我是有底线的--</Text>
+                </View>
+            )
+        }
+
+        if(!this.state.isLoadingTail){
+            return <View style={styles.loadingMore}/>
+        }
+
+        return <ActivityIndicator style={styles.loadingMore}/>
+    },
+
+    _renderHeader(){
+        var data = this.state.data
+        return(
+            <View style={styles.infoBox}>
+                <Image style={styles.avatar} source={{uri:data.author.avatar}}/>
+                <View style={styles.descBox}>
+                    <Text style={styles.nickname}>{data.author.nickname}</Text>
+                    <Text style={styles.title}>{data.title}</Text>
+                </View>
+            </View>
+        )
     },
 
     _renderRow(row){
@@ -448,7 +540,17 @@ const styles = StyleSheet.create({
 
     reply:{
         flex:1
+    },
+
+    loadingMore:{
+        marginVertical:20
+    },
+
+    loadingText:{
+        color:'#777',
+        textAlign:'center'
     }
+
 });
 
 
