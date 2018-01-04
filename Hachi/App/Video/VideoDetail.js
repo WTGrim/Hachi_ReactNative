@@ -13,11 +13,15 @@ import {
     Dimensions,
     ActivityIndicator,
     ListView,
-
+    TextInput,
+    Modal,
+    Button
 } from 'react-native';
 
 import Icon from 'react-native-vector-icons/Ionicons';
+
 var Video = require('react-native-video').default
+
 var {width, height} = Dimensions.get('window');
 var request = require('../Common/request')
 var config = require('../Common/config')
@@ -50,6 +54,11 @@ var VideoDetail = React.createClass({
 
             playing:false,
             paused:false,
+
+            modalVisible:false,
+            animationType:'none',
+            isSending:false,
+            content:''
         }
     },
 
@@ -130,7 +139,7 @@ var VideoDetail = React.createClass({
                     renderRow={this._renderRow}
                     automaticallyAdjustContentInsets={false}
                     onEndReached={this._fetchMoreData}
-                    onEndReachedThreshold={80}
+                    onEndReachedThreshold={20}
                     showsVerticalScrollIndicator={true}
                     //底部加载
                     renderFooter = {this._renderFooter}
@@ -138,6 +147,43 @@ var VideoDetail = React.createClass({
                     //头部视图
                     renderHeader = {this._renderHeader}
                 />
+
+                <Modal
+                    animationType={'fade'}
+                    visible={this.state.modalVisible}
+                    onRequestClose={() => {this._setModalVisible(false)}}
+                >
+                    <View style={styles.modalContainer}>
+                        <Icon
+                            onPress={this._closeModal}
+                            name='ios-close-outline'
+                            style={styles.closeIcon}
+                        />
+
+                        <View style={styles.commentBox}>
+                            <TextInput
+                                placeholder='写下您的评论吧...'
+                                style={styles.content}
+                                multiline={true}
+                                onFocus = {this._onFocus}
+                                onBlur={this._onBlur}
+                                defaultValue={this.state.content}
+                                onChangeText={(text)=>{
+                                    this.setState({
+                                        content:text
+                                    })
+                                }}
+                            />
+                        </View>
+
+                        <Button
+                            style={styles.commentButton}
+                            onPress={this._submit}
+                            title='评论'
+                        ></Button>
+
+                    </View>
+                </Modal>
 
             </View>
         );
@@ -200,7 +246,6 @@ var VideoDetail = React.createClass({
                 cachedResults.total = responseData.total
 
                 //更新数据源
-
                 this.setState({
                     isLoadingTail:false,
                     dataSource:this.state.dataSource.cloneWithRows(cachedResults.items),
@@ -254,14 +299,108 @@ var VideoDetail = React.createClass({
     _renderHeader(){
         var data = this.state.data
         return(
-            <View style={styles.infoBox}>
-                <Image style={styles.avatar} source={{uri:data.author.avatar}}/>
-                <View style={styles.descBox}>
-                    <Text style={styles.nickname}>{data.author.nickname}</Text>
-                    <Text style={styles.title}>{data.title}</Text>
+
+            <View style={styles.listHeader}>
+                <View style={styles.infoBox}>
+                    <Image style={styles.avatar} source={{uri:data.author.avatar}}/>
+                    <View style={styles.descBox}>
+                        <Text style={styles.nickname}>{data.author.nickname}</Text>
+                        <Text style={styles.title}>{data.title}</Text>
+                    </View>
+                </View>
+
+                <View style={styles.commentBox}>
+                    <TextInput
+                        placeholder='写下您的评论吧...'
+                        style={styles.content}
+                        multiline={true}
+                        onFocus = {this._onFocus}
+                    />
+                </View>
+
+                <View style={styles.commentArea}>
+                    <Text style={styles.commentTitle}>精彩评论</Text>
                 </View>
             </View>
+
         )
+    },
+
+    //输入框获得焦点的时候
+    _onFocus(){
+        this._setModalVisible(true)
+    },
+
+    _setModalVisible(isVisible){
+        this.setState({
+            modalVisible:isVisible
+        })
+    },
+
+    _onBlur(){
+
+    },
+
+    _closeModal(){
+        this._setModalVisible(false)
+    },
+
+    //提交评论
+    _submit(){
+        if (!this.state.content){
+            return alert('留言不能为空')
+        }
+        if (this.state.isSending){
+            return alert('正在评论中...')
+        }
+
+        this.setState({
+            isSending:true,
+
+        },()=>{
+            var body = {
+                accessToken:'ac',
+                creation:'123',
+                content:this.state.content
+            }
+
+            var url = config.api.base + config.api.submitComment
+            request.post(url, body)
+                .then((data)=>{
+                    if (data && data.success){
+                        var items = cachedResults.items.slice()
+
+                        items = [{
+                            content:this.state.content,
+                            replyBy:{
+                                nickname:'狗狗',
+                                avatar:'http://dummyimage.com/640x640/f279c0)'
+                            }
+                        }].concat(items)
+
+                        cachedResults.items = items
+                        cachedResults.total = cachedResults.total + 1
+
+                        this.setState({
+                            isSending:false,
+                            dataSource:this.state.dataSource.cloneWithRows(cachedResults.items),
+                        })
+
+                        this._setModalVisible(false)
+                    }
+                })
+                .catch((error)=>{
+                    console.log(error)
+                    this.setState({
+                        isSending:false
+                    })
+
+                    this._setModalVisible(false)
+                    alert('评论失败，请稍后重试')
+                })
+
+        })
+
     },
 
     _renderRow(row){
@@ -549,7 +688,67 @@ const styles = StyleSheet.create({
     loadingText:{
         color:'#777',
         textAlign:'center'
+    },
+
+    listHeader:{
+        marginTop: 10,
+        width:width
+    },
+    commentBox:{
+        marginTop:10,
+        marginBottom:10,
+        padding:8,
+        width:width
+    },
+
+    content:{
+        paddingLeft:2,
+        color:'#333',
+        borderWidth:1,
+        borderColor:'#ddd',
+        borderRadius:4,
+        fontSize:14,
+        height:80,
+    },
+
+    commentArea:{
+        width:width,
+        paddingBottom:6,
+        paddingLeft:10,
+        paddingRight:10,
+        borderBottomColor:'#eee',
+        borderBottomWidth:1,
+    },
+
+    commentTitle:{
+
+    },
+
+    modalContainer:{
+        flex:1,
+        paddingTop:15,
+        backgroundColor:'#fff'
+
+    },
+
+    closeIcon:{
+        alignSelf:'center',
+        fontSize:30,
+        color:'#ee735c'
+    },
+
+    commentButton:{
+        width:width - 20,
+        padding:16,
+        marginTop:20,
+        marginBottom:20,
+        borderWidth:1,
+        borderRadius:4,
+        borderColor:'#ee735c',
+        fontSize:18
     }
+
+
 
 });
 
