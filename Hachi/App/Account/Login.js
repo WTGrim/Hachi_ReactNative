@@ -14,6 +14,7 @@ import {
 } from 'react-native';
 
 import Button from 'apsl-react-native-button'
+var CountDown = require('react-native-sk-countdown').CountDownText
 var request = require('../Common/request')
 var config = require('../Common/config')
 
@@ -46,7 +47,7 @@ var Account = React.createClass({
                     {
                         this.state.codeSend
                             ?<View style={styles.verifyCodeBox}>
-                                <TextInput placeholder='请验证码'
+                                <TextInput placeholder='请输入验证码'
                                            autoCaptialize='none'
                                            autoCorrect={false}
                                            keyboardType='number-pad'
@@ -127,7 +128,6 @@ const styles = StyleSheet.create({
     },
 
     inputTextField:{
-        // flex:1,
         height:40,
         paddingLeft:15,
         paddingRight:15,
@@ -156,6 +156,9 @@ const styles = StyleSheet.create({
         borderRadius:4,
         borderColor:'#ee735c',
         borderWidth:1
+    },
+    verifyCodeBox:{
+        marginTop:5,
     }
 
 });

@@ -15,6 +15,8 @@ module.exports = {
         videolist:'GET//api/videolist',
         up: 'POST/api/up',
         comment:'GET/api/comments',
-        submitComment:'POST/api/submitComment'
+        submitComment:'POST/api/submitComment',
+        signup:'POST/api/u/signup',
+        verify:'POST/api/u/verify'
     }
 }
