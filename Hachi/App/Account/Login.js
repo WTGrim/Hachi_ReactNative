@@ -21,7 +21,9 @@ var Account = React.createClass({
 
     getInitialState(){
         return({
-            codeSend:true
+            veriyCode:'',
+            phoneNumber:'',
+            codeSend:false
         })
     },
     render() {
@@ -40,6 +42,24 @@ var Account = React.createClass({
                                    })
                                }}
                     />
+
+                    {
+                        this.state.codeSend
+                            ?<View style={styles.verifyCodeBox}>
+                                <TextInput placeholder='请验证码'
+                                           autoCaptialize='none'
+                                           autoCorrect={false}
+                                           keyboardType='number-pad'
+                                           style={styles.inputTextField}
+                                           onChangeText={(text)=>{
+                                               this.setState({
+                                                   veriyCode:text
+                                               })
+                                           }}
+                                />
+                            </View>
+                            :null
+                    }
 
                     {
                         this.state.codeSend
@@ -69,12 +89,23 @@ var Account = React.createClass({
         request.post(signup, body)
             .then((data) => {
                 if (data && data.success){
-
+                    this._showVerify()
+                }else {
+                    alert('获取验证码失败，请检查手机号是否正确')
                 }
             })
+            .catch((error)=>{
+                alert('获取验证码失败，请检查网络')
+            })
+    },
 
-
+    //显示填写验证码
+    _showVerify(){
+        this.setState({
+            codeSend:true
+        })
     }
+
 });
 
 const styles = StyleSheet.create({
