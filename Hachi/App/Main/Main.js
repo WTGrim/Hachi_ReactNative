@@ -18,6 +18,7 @@ var Icon = require('react-native-vector-icons/Ionicons')
 var Video = require('../Video/Video');
 var Creation = require('../Creation/Creation');
 var Account = require('../Account/Account');
+var Login = require('../Account/Login');
 
 var Main =  React.createClass({
 
@@ -38,7 +39,7 @@ var Main =  React.createClass({
                 {this.renderTabBarItem('创作', 'tab_trends_normal_27x27_', 'tab_trends_inverse_27x27_highlighted', 'creation', '创作', Creation)}
 
                 {/**我的*/}
-                {this.renderTabBarItem('我的', 'tab_my_normal_27x27_', 'tab_my_inverse_27x27_highlighted', 'account', '我的', Account)}
+                {this.renderTabBarItem('我的', 'tab_my_normal_27x27_', 'tab_my_inverse_27x27_highlighted', 'account', '我的', Login)}
 
             </TabNavigator>
         );
