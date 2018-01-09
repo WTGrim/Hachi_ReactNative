@@ -14,11 +14,11 @@ import {
     ActivityIndicator,
     ListView,
     TextInput,
-    Modal,
-    Button
+    Modal
 } from 'react-native';
 
 import Icon from 'react-native-vector-icons/Ionicons';
+var Button = require('apsl-react-native-button')
 
 var Video = require('react-native-video').default
 
@@ -176,11 +176,9 @@ var VideoDetail = React.createClass({
                             />
                         </View>
 
-                        <Button
-                            style={styles.commentButton}
-                            onPress={this._submit}
-                            title='评论'
-                        ></Button>
+                        <Button style={styles.commentButton}
+                                onPress={this._submit}
+                                textStyle={{fontSize:14, color:'#ee7c5c'}}>评论</Button>
 
                     </View>
                 </Modal>
@@ -739,13 +737,14 @@ const styles = StyleSheet.create({
 
     commentButton:{
         width:width - 20,
+        height:40,
         padding:16,
+        marginLeft:10,
         marginTop:20,
         marginBottom:20,
         borderWidth:1,
         borderRadius:4,
         borderColor:'#ee735c',
-        fontSize:18
     }
 
 

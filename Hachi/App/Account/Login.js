@@ -13,18 +13,21 @@ import {
     ScrollView,
 } from 'react-native';
 
-import Button from 'apsl-react-native-button'
-var CountDown = require('react-native-sk-countdown').CountDownText
+var Button = require('apsl-react-native-button')
+import {CountDownText} from 'react-native-sk-countdown'
+
 var request = require('../Common/request')
 var config = require('../Common/config')
 
-var Account = React.createClass({
+
+var Login = React.createClass({
 
     getInitialState(){
         return({
-            veriyCode:'',
+            verifyCode:'',
             phoneNumber:'',
-            codeSend:false
+            codeSend:false,
+            countingDone:false
         })
     },
     render() {
@@ -54,10 +57,28 @@ var Account = React.createClass({
                                            style={styles.inputTextField}
                                            onChangeText={(text)=>{
                                                this.setState({
-                                                   veriyCode:text
+                                                   verifyCode:text
                                                })
                                            }}
                                 />
+
+                                {
+                                    this.state.countingDone
+                                    ?<Button style={styles.verifyCodeAgain}
+                                             textStyle={{fontSize:14, color:'#ee735c'}}
+                                             onPress={this._sendVerfiyCode}>获取验证码</Button>
+                                    :<CountDownText
+                                            style={styles.countBtn}
+                                            countType='seconds' // 计时类型：seconds / date
+                                            auto={true} // 自动开始
+                                            afterEnd={this._countingDone} // 结束回调
+                                            timeLeft={60} // 正向计时 时间起点为0秒
+                                            step={-1} // 计时步长，以秒为单位，正数则为正计时，负数为倒计时
+                                            startText='获取验证码' // 开始的文本
+                                            endText='获取验证码' // 结束的文本
+                                            intervalText={(sec) => sec + '秒重新获取'} // 定时的文本回调
+                                     />
+                                }
                             </View>
                             :null
                     }
@@ -104,6 +125,13 @@ var Account = React.createClass({
     _showVerify(){
         this.setState({
             codeSend:true
+        })
+    },
+
+    //倒计时结束
+    _countingDone(){
+        this.setState({
+            countingDone:true
         })
     }
 
@@ -159,10 +187,39 @@ const styles = StyleSheet.create({
     },
     verifyCodeBox:{
         marginTop:5,
+        flexDirection:'row',
+        justifyContent:'space-between'
+    },
+
+    countBtn:{
+        width:110,
+        height:40,
+        padding:10,
+        marginLeft:8,
+        backgroundColor:'white',
+        color:'#ee735c',
+        borderColor:'#ee735c',
+        textAlign:'center',
+        fontWeight:'600',
+        fontSize:13,
+        borderRadius:2
+    },
+
+    verifyCodeAgain:{
+        width:110,
+        height:40,
+        padding:10,
+        marginLeft:8,
+        backgroundColor:'white',
+        borderColor:'#ee735c',
+        borderRadius:2
     }
+
+
+
 
 });
 
 
 //输出组件
-module.exports = Account;
+module.exports = Login;
