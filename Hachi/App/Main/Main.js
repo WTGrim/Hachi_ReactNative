@@ -8,7 +8,8 @@ import {
     View,
     Image,
     Platform,  //判断当前运行的系统
-    Navigator
+    Navigator,
+    AsyncStorage
 } from 'react-native';
 
 //导入外部组件类
@@ -25,12 +26,59 @@ var Main =  React.createClass({
     //初始化函数(状态机)
     getInitialState(){
         return{
-            selectedTab:'video'
+            selectedTab:'video',
+            user:null,
+            logined:false
         }
     },
 
+    componentDidMount(){
+
+        this._asyncAppStatus()
+    },
+
+    _asyncAppStatus(){
+        AsyncStorage.getItem('user')
+            .then((data)=>{
+                var user
+                var newState={}
+                if (data){
+                    user = JSON.parse(data)
+                }
+                if (user && user.accessToken){
+                    newState.user = user
+                    newState.logined = true
+                }else{
+                    newState.logined = false
+                }
+                this.setState(newState)
+            })
+    },
+
+    //登录后本地存储用户信息
+    _afterLogin(user){
+
+        //将对象转成本地存储的字符串
+        var user = JSON.stringify(user)
+        AsyncStorage.setItem('user', user)
+            .then(()=>{
+                this.setState({
+                    logined:true,
+                    user:user
+                })
+            })
+
+    },
+
     render() {
+
+        //未登录到登录界面
+        if(!this.state.logined){
+            return <Login afterLogin={this._afterLogin}/>
+        }
+
         return (
+
             <TabNavigator>
                 {/**视频*/}
                 {this.renderTabBarItem('视频', 'tab_activity_normal_27x27_', 'tab_activity_inverse_27x27_highlighted', 'video', '视频', Video)}
@@ -39,7 +87,7 @@ var Main =  React.createClass({
                 {this.renderTabBarItem('创作', 'tab_trends_normal_27x27_', 'tab_trends_inverse_27x27_highlighted', 'creation', '创作', Creation)}
 
                 {/**我的*/}
-                {this.renderTabBarItem('我的', 'tab_my_normal_27x27_', 'tab_my_inverse_27x27_highlighted', 'account', '我的', Login)}
+                {this.renderTabBarItem('我的', 'tab_my_normal_27x27_', 'tab_my_inverse_27x27_highlighted', 'account', '我的', Account)}
 
             </TabNavigator>
         );

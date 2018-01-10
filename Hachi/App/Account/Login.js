@@ -54,7 +54,7 @@ var Login = React.createClass({
                                            autoCaptialize='none'
                                            autoCorrect={false}
                                            keyboardType='number-pad'
-                                           style={styles.inputTextField}
+                                           style={styles.inputTextField2}
                                            onChangeText={(text)=>{
                                                this.setState({
                                                    verifyCode:text
@@ -133,6 +133,34 @@ var Login = React.createClass({
         this.setState({
             countingDone:true
         })
+    },
+
+    //登录
+    _submit(){
+        var phoneNumber = this.state.phoneNumber
+        var verifyCode = this.state.verifyCode
+
+        if (!phoneNumber || !verifyCode){
+            return alert('手机号或验证码不能为空')
+        }
+
+        var body={
+            phoneNumber:phoneNumber,
+            verifyCode:verifyCode
+        }
+        var verify = config.api.base + config.api.verify
+        request.post(verify, body)
+            .then((data) => {
+                if (data && data.success){
+                    //页面传递登录后的用户信息
+                    this.props.afterLogin(data.data)
+                }else {
+                    alert('登录失败，请检查网络')
+                }
+            })
+            .catch((error)=>{
+                alert('获取验证码失败，请检查网络')
+            })
     }
 
 });
@@ -166,6 +194,20 @@ const styles = StyleSheet.create({
         fontSize:16,
         backgroundColor:'#fff',
     },
+
+    inputTextField2:{
+        flex:1,
+        height:40,
+        paddingLeft:15,
+        paddingRight:15,
+        paddingTop:5,
+        paddingBottom:5,
+        borderRadius:4,
+        color:'#666',
+        fontSize:16,
+        backgroundColor:'#fff',
+    },
+
 
     submitBtn:{
         backgroundColor:'transparent',
@@ -214,9 +256,6 @@ const styles = StyleSheet.create({
         borderColor:'#ee735c',
         borderRadius:2
     }
-
-
-
 
 });
 
