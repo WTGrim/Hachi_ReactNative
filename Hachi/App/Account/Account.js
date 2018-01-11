@@ -11,30 +11,71 @@ import {
     Image,
     Platform,
     ScrollView,
-    Dimensions
+    Dimensions,
+    AsyncStorage
 } from 'react-native';
 
 import Icon from 'react-native-vector-icons/Ionicons';
 var {width, height} = Dimensions.get('window');
 
 var Account = React.createClass({
-    render() {
 
+    getInitialState(){
+        return({
+            user:this.props.user || {}
+        })
+    },
+
+    componentDidMount(){
+        AsyncStorage.getItem('user')
+            .then((data)=>{
+                var user
+
+                if (data){
+                    user = JSON.parse(data)
+                }
+
+                if (user && user.accessToken){
+                    this.setState({
+                        user:user
+                    })
+                }
+            })
+    },
+
+    render() {
+        var user = this.state.user
         return (
             <View style={styles.container}>
                 <View style={styles.navBar}>
                     <Text style={styles.navBarTitle}>我的账户</Text>
                 </View>
 
-                <View style={styles.avatarContainer}>
-                    <Text style={styles.avatarTip}>添加狗狗头像</Text>
-                    <TouchableOpacity style={styles.avatorBox}>
-                        <Icon
-                            name='ios-cloud-upload-outline'
-                            style={styles.plusIcon}
-                        />
-                    </TouchableOpacity>
-                </View>
+                {
+                    !user.avatar
+                    ?<TouchableOpacity style={styles.avatarContainer}>
+                            <Image  source={{uri:user.avatar}} style={styles.avatarContainer}>
+                                <View style={styles.avatorBox}>
+                                    <Image
+                                        source={{uri:user.avatar}}
+                                        style={styles.avatar}
+                                    />
+                                </View>
+                                <Text style={styles.avatarTip}>戳这里换头像</Text>
+                            </Image>
+
+                        </TouchableOpacity>
+                    :<View style={styles.avatarContainer}>
+                            <Text style={styles.avatarTip}>添加狗狗头像</Text>
+                            <TouchableOpacity style={styles.avatorBox}>
+                                <Icon
+                                    name='ios-cloud-upload-outline'
+                                    style={styles.plusIcon}
+                                />
+                            </TouchableOpacity>
+                    </View>
+                }
+
              </View>
          );
     },
@@ -66,12 +107,25 @@ const styles = StyleSheet.create({
         height:140,
         alignItems:'center',
         justifyContent:'center',
-        backgroundColor:'#eee'
+        backgroundColor:'#666'
     },
 
     avatarTip:{
-
+        color:'#fff',
+        backgroundColor:'transparent',
+        fontSize:14
     },
+
+    avatar:{
+        marginBottom:15,
+        width:width * 0.2,
+        height:width * 0.2,
+        resizeMode:'cover',
+        borderRadius:width * 0.1,
+        borderWidth:1,
+        borderColor:'#ccc'
+    },
+
 
     avatorBox:{
         marginTop:15,
