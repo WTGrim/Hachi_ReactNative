@@ -15,8 +15,24 @@ import {
     AsyncStorage
 } from 'react-native';
 
+var ImagePicker = require('NativeModules').ImagePickerManager;
 import Icon from 'react-native-vector-icons/Ionicons';
 var {width, height} = Dimensions.get('window');
+
+var photoOptions = {
+    title: '选择头像',
+    cancelButtonTitle:'取消',
+    takePhotoButtonTitle:'拍照',
+    chooseFromLibraryButtonTitle:'从相册选择',
+    quality:0.75,
+    allowsEditing:true,
+    noData:false,
+    storageOptions: {
+        skipBackup: true,
+        path: 'images'
+    }
+};
+
 
 var Account = React.createClass({
 
@@ -52,8 +68,8 @@ var Account = React.createClass({
                 </View>
 
                 {
-                    !user.avatar
-                    ?<TouchableOpacity style={styles.avatarContainer}>
+                    user.avatar
+                    ?<TouchableOpacity style={styles.avatarContainer} onPress={this._pickPhoto}>
                             <Image  source={{uri:user.avatar}} style={styles.avatarContainer}>
                                 <View style={styles.avatorBox}>
                                     <Image
@@ -79,6 +95,30 @@ var Account = React.createClass({
              </View>
          );
     },
+
+    //选择相片
+    _pickPhoto(){
+
+        ImagePicker.showImagePicker(photoOptions, (response) => {
+            console.log('Response = ', response)
+
+            if (response.didCancel) {
+                return
+            }
+            else if (response.error) {
+                console.log('ImagePicker Error: ', response.error)
+                return
+            }
+
+            var user = this.state.user
+            var avatarData = 'data:image/jpegbase64,' + response.data
+            user.avatar = avatarData
+            this.setState({
+                user:user
+            })
+
+        });
+    }
 });
 
 const styles = StyleSheet.create({
